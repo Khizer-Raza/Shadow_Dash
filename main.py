@@ -29,7 +29,7 @@ font_small = pygame.font.SysFont("Verdana", 40)
 game_over = font.render("Game Over", True, BLACK)
 score_card = font.render("Score: ", True, BLACK)
  
-background_original = pygame.image.load("assets/Image/AnimatedStreet.png")
+background_original = pygame.image.load("assets/Image/Background.png")
 background = pygame.transform.rotate(pygame.transform.scale(background_original, (1080, 720)), 0)
 
 DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
