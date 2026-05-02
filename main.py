@@ -3,7 +3,7 @@ from pygame.locals import *
 import sys
 import time
 from player import Player
-from enemy import Enemy
+from enemy import ObstacleManager
 
 pygame.init()
 
@@ -38,14 +38,12 @@ pygame.display.set_caption("Car Game")
          
 #Setting up Sprites        
 P1 = Player()
-E1 = Enemy()
+obstacle_manager = ObstacleManager(spike_pool_size=1, machine_pool_size=1)
  
 #Creating Sprites Groups
-enemies = pygame.sprite.Group()
-enemies.add(E1)
+enemies = pygame.sprite.Group()  # Will be updated each frame with active obstacles
 all_sprites = pygame.sprite.Group()
 all_sprites.add(P1)
-all_sprites.add(E1)
 
 #Adding a new User event 
 INC_SPEED = pygame.USEREVENT + 1
@@ -66,31 +64,68 @@ while True:
             pygame.quit()
             sys.exit()
     
+    # Update obstacles
+    obstacle_manager.update(SPEED)
+    
+    # Sync enemies group with active obstacles for collision detection
+    enemies = obstacle_manager.get_all_obstacles()
+    
     DISPLAYSURF.blit(background, (0,0))
     scores = font_small.render(str(SCORE), True, WHITE)
     DISPLAYSURF.blit(scores, (30,10))
     
-    #Moves and Re-draws all Sprites
-    for entity in all_sprites:
-        DISPLAYSURF.blit(entity.image, entity.rect)
-        entity.move()
+    #Moves and Re-draws all Sprites (player only)
+    DISPLAYSURF.blit(P1.image, P1.rect)
+    P1.move()
     
-    #To be run if collision occurs between Player and Enemy
-    if pygame.sprite.spritecollideany(P1, enemies):
+    # Draw all active obstacles
+    for obstacle in enemies:
+        DISPLAYSURF.blit(obstacle.image, obstacle.rect)
+    
+    #To be run if collision occurs between Player and any Obstacle
+    collision_occurs = False
+    
+    for obstacle in enemies:
+        # Collision mechanics:
+        # Running:  Collision with Spike AND Collision with Machine
+        # Sliding:  Collision with Spike AND Pass under Machine
+        # Jumping:  Collision with Spike AND Collision with Machine
+        
+        if P1.is_sliding:
+            # Sliding: always collides with spikes, passes under machines
+            if obstacle.obstacle_type == "spike":
+                # Spike at ground level - sliding doesn't help, still collides
+                if P1.rect.colliderect(obstacle.rect):
+                    collision_occurs = True
+                    break
+            else:  # machine
+                # Machine in air - sliding allows passing under it
+                continue  # No collision with machine when sliding
+        elif P1.is_jumping:
+            # Jumping: collides with both spikes and machines
+            if P1.rect.colliderect(obstacle.rect):
+                collision_occurs = True
+                break
+        else:  # Running
+            # Running: collides with both spikes and machines
+            if P1.rect.colliderect(obstacle.rect):
+                collision_occurs = True
+                break
+    
+    if collision_occurs:
         #pygame.mixer.Sound('crash.wav').play()
         time.sleep(0.5)
-          
         DISPLAYSURF.fill(RED)
         DISPLAYSURF.blit(game_over, (30,250))
         DISPLAYSURF.blit(score_card, (30,350))
         DISPLAYSURF.blit(scores, (250,365))
           
         pygame.display.update()
-        for entity in all_sprites:
-            entity.kill() 
+        P1.kill()
+        obstacle_manager.reset()
         time.sleep(2)
         pygame.quit()
-        sys.exit()        
+        sys.exit()
          
     pygame.display.update()
     FramePerSec.tick(FPS)
