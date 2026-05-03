@@ -13,15 +13,16 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
         # Load and cache all images at initialization
-        self.image_running = pygame.image.load("assets/Image/Character_running.png").convert()
+        # Use convert_alpha() for proper transparency and set colorkey to WHITE for all images
+        self.image_running = pygame.image.load("assets/Image/Character_running.png").convert_alpha()
         self.image_running = pygame.transform.scale(self.image_running, (98, 100))
-        self.image_running.set_colorkey((0, 0, 0))
+        self.image_running.set_colorkey((255, 255, 255))
         
-        self.image_jumping = pygame.image.load("assets/Image/Character_jumping.png").convert()
+        self.image_jumping = pygame.image.load("assets/Image/Character_jumping.png").convert_alpha()
         self.image_jumping = pygame.transform.scale(self.image_jumping, (72, 100))
         self.image_jumping.set_colorkey((255, 255, 255))
         
-        self.image_sliding = pygame.image.load("assets/Image/Character_sliding.png").convert()
+        self.image_sliding = pygame.image.load("assets/Image/Character_sliding.png").convert_alpha()
         self.image_sliding = pygame.transform.scale(self.image_sliding, (100, 50))
         self.image_sliding.set_colorkey((255, 255, 255))
         

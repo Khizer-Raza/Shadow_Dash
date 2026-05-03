@@ -21,7 +21,7 @@ class Spike(pygame.sprite.Sprite):
         self.speed = speed
         self.is_active = False
         
-        # Load and scale spike image
+        # Load and scale spike image with transparency
         original_image = pygame.image.load("assets/Image/Spikes.png").convert_alpha()
         self.image = pygame.transform.scale(original_image, (self.SPIKE_WIDTH, self.SPIKE_HEIGHT))
         self.image.set_colorkey((255, 255, 255))
